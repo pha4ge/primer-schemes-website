@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import { getCachedFlatSchemes } from '$lib/catalogCache.js';
 	import StatusPill from '$lib/StatusPill.svelte';
+	import { GITHUB_REPO_SCHEMES_BASE } from '$lib/config.js';
 
 	import AmpliconPlot from './DefaultAmpliconPlot.svelte';
 
@@ -266,7 +267,7 @@
 		<h2>{scheme.name} / {scheme.amplicon_size} / {scheme.version}</h2>
 		<StatusPill status={scheme.status} />
 		<a
-			href="https://github.com/ChrisgKent/pha4ge-primer-schemes/tree/main/schemes/{scheme.name}/{scheme.amplicon_size}/{scheme.version}"
+			href="{GITHUB_REPO_SCHEMES_BASE}/{scheme.name}/{scheme.amplicon_size}/{scheme.version}"
 			class="contrast">[github-page]</a
 		>
 	</div>

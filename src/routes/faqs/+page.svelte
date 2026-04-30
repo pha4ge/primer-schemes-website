@@ -1,3 +1,7 @@
+<script>
+	import { GITHUB_REPO_URL } from '$lib/config.js';
+</script>
+
 <main>
 	<section>
 		<hgroup>
@@ -14,7 +18,7 @@
 			<h6>Submit a pull request</h6>
 			<p>
 				Submit a pull request to
-				<a href="https://github.com/ChrisgKent/pha4ge-primer-schemes">ChrisgKent/pha4ge-primer-schemes</a>
+				<a href={GITHUB_REPO_URL}>ChrisgKent/pha4ge-primer-schemes</a>
 			</p>
 			<h6>Contact us</h6>
 			<p>

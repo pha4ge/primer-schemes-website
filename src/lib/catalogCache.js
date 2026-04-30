@@ -1,7 +1,5 @@
 import { flattenedSchemeIndex } from './flattenedSchemes.js';
-
-const INDEX_URL =
-	'https://raw.githubusercontent.com/ChrisgKent/pha4ge-primer-schemes/refs/heads/main/index.json';
+import { CATALOG_INDEX_URL } from './config.js';
 
 const CACHE_NAMESPACE = 'catalog-cache:v2';
 const CACHE_KEYS = {
@@ -159,7 +157,7 @@ export const getCachedFlatSchemes = async (options = {}) => {
 	return getCachedResource({
 		resourceKey: 'flatSchemes',
 		storageKey: CACHE_KEYS.flatSchemes,
-		url: INDEX_URL,
+		url: CATALOG_INDEX_URL,
 		normalize: (indexPayload) => flattenedSchemeIndex(indexPayload),
 		...options
 	});
