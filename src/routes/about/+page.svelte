@@ -6,16 +6,22 @@
 	<h1>About</h1>
 	<article>
 		<p>
-			The number of primer schemes is increasing rapidly, so we have built this site to make it
-			easier to find pha4ge primer schemes and track their status. You can request that your scheme
-			be tracked to enable other users to see it.
+			This site is a browsable interface to <a href="https://github.com/pha4ge/primer-schemes"
+				>pha4ge/primer-schemes</a
+			>, a versioned and schematised community repository of tiled amplicon primer scheme
+			definitions for pathogen sequencing. The repository is built around a top-level machine readable
+			<a href="https://github.com/pha4ge/primer-schemes/blob/main/index.json">index</a> of available
+			scheme definitions, with the objective of eliminating ambiguity in scheme naming and versioning
+			and maximising the findability, accessibility, interoperability and reusability (<a
+				href="https://www.go-fair.org/fair-principles/">FAIRness</a
+			>) of primer schemes and associated sequencing data. An example of a canonical primer scheme
+			name is <code>sars-cov-2/midnight/1200/v1.0.0</code>.
 		</p>
 		<p>
-			The coloured status bar will indicate the development state of the scheme (see <a
-				href="{base}/faqs">FAQ</a
-			> for more information). Clicking on a scheme displays several new plots, scheme details, BED file
-			and the reference(s). If you are logged in you can comment and engage with other users using Github
-			Discussions.
+			Each scheme has a status indicating its development state (see <a href="{base}/faqs">FAQs</a>
+			for more information). Selecting a scheme reveals amplicon plots, scheme metadata, the BED file
+			and reference sequence(s). To request that a scheme be tracked here, open a pull request or issue
+			on <a href="https://github.com/pha4ge/primer-schemes">pha4ge/primer-schemes</a>.
 		</p>
 	</article>
 </main>
