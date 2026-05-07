@@ -7,13 +7,15 @@
 		<article>
 			<header>
 				<nav>
-					<li><strong>How do I request for my scheme to be tracked?</strong></li>
+					<li><strong>How can I add my scheme?</strong></li>
 				</nav>
 			</header>
-			<h6>Submit a pull request</h6>
+			<h6>Open a pull request</h6>
 			<p>
-				Submit a pull request to
-				<a href="https://github.com/pha4ge/primer-schemes">pha4ge/primer-schemes</a>
+				Open a pull request at
+				<a href="https://github.com/pha4ge/primer-schemes/pulls"
+					>pha4ge/primer-schemes</a
+				>
 			</p>
 			<h6>Contact us</h6>
 			<p>
