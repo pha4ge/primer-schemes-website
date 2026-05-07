@@ -14,12 +14,13 @@
 			<h6>Submit a pull request</h6>
 			<p>
 				Submit a pull request to
-				<a href="https://github.com/ChrisgKent/pha4ge-primer-schemes">ChrisgKent/pha4ge-primer-schemes</a>
+				<a href="https://github.com/pha4ge/primer-schemes">pha4ge/primer-schemes</a>
 			</p>
 			<h6>Contact us</h6>
 			<p>
 				Email us at
-				<a href="mailto:c.g.kent@bham.ac.uk">c.g.kent@bham.ac.uk</a>
+				<a href="mailto:b.constantinides@bham.ac.uk">b.constantinides@bham.ac.uk</a> and
+					<a href="mailto:c.g.kent@bham.ac.uk">c.g.kent@bham.ac.uk</a>
 			</p>
 		</article>
 

@@ -266,7 +266,7 @@
 		<h2>{scheme.name} / {scheme.amplicon_size} / {scheme.version}</h2>
 		<StatusPill status={scheme.status} />
 		<a
-			href="https://github.com/ChrisgKent/pha4ge-primer-schemes/tree/main/schemes/{scheme.name}/{scheme.amplicon_size}/{scheme.version}"
+			href="https://github.com/pha4ge/primer-schemes/tree/main/schemes/{scheme.name}/{scheme.amplicon_size}/{scheme.version}"
 			class="contrast">[github-page]</a
 		>
 	</div>

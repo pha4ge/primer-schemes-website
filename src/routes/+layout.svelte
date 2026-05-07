@@ -16,7 +16,7 @@
 				<li><a href="{base}/">Search</a></li>
 				<li><a href="{base}/faqs">FAQs</a></li>
 				<li><a href="{base}/about">About</a></li>
-				<li><a href="https://github.com/ChrisgKent/pha4ge-primer-schemes">GitHub</a></li>
+				<li><a href="https://github.com/pha4ge/primer-schemes">GitHub</a></li>
 			</ul>
 		</nav>
 	</div>
@@ -27,7 +27,7 @@
 <footer>
 	<p>
 		pha4ge primer schemes
-		<a href="https://github.com/ChrisgKent/pha4ge-primer-schemes"
+		<a href="https://github.com/pha4ge/primer-schemes"
 			><img class="gitlogo" src={gitHubLogo} alt="Github logo" /></a
 		>
 	</p>
