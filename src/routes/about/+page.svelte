@@ -15,13 +15,17 @@
 			and maximising the findability, accessibility, interoperability and reusability (<a
 				href="https://www.go-fair.org/fair-principles/">FAIRness</a
 			>) of primer schemes and associated sequencing data. An example of a canonical primer scheme
-			name is <code>sars-cov-2/midnight/1200/v1.0.0</code>.
+			name is
+			<a
+				href="https://github.com/pha4ge/primer-schemes/tree/main/schemes/midnight-sars-cov-2/1200/v1.0.0"
+				><code>sars-cov-2/midnight/1200/v1.0.0</code></a
+			>.
 		</p>
 		<p>
 			Each scheme has a status indicating its development state (see <a href="{base}/faqs">FAQs</a>
 			for more information). Selecting a scheme reveals amplicon plots, scheme metadata, the BED file
-			and reference sequence(s). To request that a scheme be tracked here, open a pull request or issue
-			on <a href="https://github.com/pha4ge/primer-schemes">pha4ge/primer-schemes</a>.
+			and reference sequence(s). To add/submit a scheme, open a pull request or issue on
+			<a href="https://github.com/pha4ge/primer-schemes">pha4ge/primer-schemes</a>.
 		</p>
 	</article>
 </main>
