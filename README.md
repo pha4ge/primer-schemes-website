@@ -1,5 +1,9 @@
 # primer-schemes-website
 
+Browse and download primer schemes in the [PHA4GE primer schemes repository](https://github.com/pha4ge/primer-schemes) at [primerschemes.pha4ge.org](https://primerschemes.pha4ge.org).
+
+## Developer documentation
+
 Developer documentation for the `primerschemes.pha4ge.org` frontend.
 
 This is a SvelteKit static site that:
