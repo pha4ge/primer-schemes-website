@@ -2,7 +2,6 @@
 	<section>
 		<hgroup>
 			<h1>FAQs</h1>
-			<p>Answers to common questions</p>
 		</hgroup>
 
 		<article>

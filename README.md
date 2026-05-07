@@ -1,6 +1,6 @@
-# primalscheme-labs
+# primer-schemes-website
 
-Developer documentation for the `labs.primalscheme.com` frontend.
+Developer documentation for the `primerschemes.pha4ge.org` frontend.
 
 This is a SvelteKit static site that:
 - fetches the upstream primer scheme catalog at runtime
