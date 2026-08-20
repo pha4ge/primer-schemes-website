@@ -26,6 +26,10 @@
 	let referenceErrored = false;
 	let showReference = false;
 
+	// Name copy
+	let nameCopied = false;
+	let nameCopyResetTimer = undefined;
+
 	// Info.json
 	let info = undefined;
 	let infoLoading = true;
@@ -121,6 +125,20 @@
 				.sort()
 				.map((key) => ({ key, value: info[key] }))
 		: [];
+
+	async function copyName() {
+		if (!scheme?.name) return;
+		try {
+			await navigator.clipboard.writeText(`${scheme.name}/${scheme.amplicon_size}/${scheme.version}`.replace(/\s/g, ''));
+			nameCopied = true;
+			clearTimeout(nameCopyResetTimer);
+			nameCopyResetTimer = setTimeout(() => {
+				nameCopied = false;
+			}, 1400);
+		} catch (err) {
+			console.error(err);
+		}
+	}
 
 	async function copyInfoJson() {
 		if (!info) return;
@@ -264,7 +282,16 @@
 		<p class="cache-warning">Using cached catalog data; upstream refresh failed. Data may be up to 2+ minutes old.</p>
 	{/if}
 	<div class="grid level">
-		<h2>{scheme.name} / {scheme.amplicon_size} / {scheme.version}</h2>
+		<h2>
+			{scheme.name} / {scheme.amplicon_size} / {scheme.version}
+			<button type="button" class="copy-name" on:click={copyName} title="Copy scheme name">
+				{#if nameCopied}
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+				{:else}
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+				{/if}
+			</button>
+		</h2>
 		<StatusPill status={scheme.status} />
 		<a
 			href="{GITHUB_REPO_SCHEMES_BASE}/{scheme.name}/{scheme.amplicon_size}/{scheme.version}"
@@ -613,6 +640,25 @@
 {/if}
 
 <style>
+	.copy-name {
+		display: inline-flex;
+		align-items: center;
+		margin: 0 0 0 0.4rem;
+		padding: 0.2rem 0.3rem;
+		background: none;
+		border: none;
+		color: var(--pico-muted-color);
+		cursor: pointer;
+		vertical-align: middle;
+		border-radius: 4px;
+		line-height: 1;
+	}
+
+	.copy-name:hover {
+		color: var(--pico-primary);
+		background: rgba(35, 74, 114, 0.08);
+	}
+
 	.level {
 		grid-template-columns: 1fr auto;
 		align-items: center;
