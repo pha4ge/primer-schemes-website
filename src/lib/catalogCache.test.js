@@ -10,18 +10,20 @@ const INDEX_PAYLOAD = {
 		'virus-a': {
 			400: {
 				'v1.0.0': {
-					name: 'virus-a',
+					primer_scheme_name: 'virus-a',
 					amplicon_size: 400,
-					version: 'v1.0.0',
-					status: 'VALIDATED',
-					contributors: [{ name: 'Alice' }],
-					target_organisms: [{ common_name: 'virus-a' }],
-					license: 'CC-BY-SA-4.0',
-					tags: [],
+					primer_scheme_version: 'v1.0.0',
+					primer_scheme_development_status: 'VALIDATED',
+					primer_scheme_contributor: [{ primer_scheme_contributor_name: 'Alice' }],
+					primer_scheme_target_organism: [{ primer_scheme_target_organism_name: 'virus-a' }],
+					primer_scheme_license: 'CC-BY-SA-4.0',
 					primer_file_url: 'https://example.com/primer.bed',
 					reference_file_url: 'https://example.com/reference.fasta',
 					info_file_url: 'https://example.com/info.json',
-					checksums: { primer_sha256: 'abc', reference_sha256: 'def' }
+					primer_scheme_checksums: {
+						primer_scheme_sha256: 'abc',
+						reference_sequence_sha256: 'def'
+					}
 				}
 			}
 		}
@@ -33,18 +35,20 @@ const INDEX_PAYLOAD_REFRESHED = {
 		'virus-b': {
 			500: {
 				'v2.0.0': {
-					name: 'virus-b',
+					primer_scheme_name: 'virus-b',
 					amplicon_size: 500,
-					version: 'v2.0.0',
-					status: 'DRAFT',
-					contributors: [{ name: 'Bob' }],
-					target_organisms: [{ common_name: 'virus-b' }],
-					license: 'CC-BY-SA-4.0',
-					tags: [],
+					primer_scheme_version: 'v2.0.0',
+					primer_scheme_development_status: 'DRAFT',
+					primer_scheme_contributor: [{ primer_scheme_contributor_name: 'Bob' }],
+					primer_scheme_target_organism: [{ primer_scheme_target_organism_name: 'virus-b' }],
+					primer_scheme_license: 'CC-BY-SA-4.0',
 					primer_file_url: 'https://example.com/primer.bed',
 					reference_file_url: 'https://example.com/reference.fasta',
 					info_file_url: 'https://example.com/info.json',
-					checksums: { primer_sha256: 'ghi', reference_sha256: 'jkl' }
+					primer_scheme_checksums: {
+						primer_scheme_sha256: 'ghi',
+						reference_sequence_sha256: 'jkl'
+					}
 				}
 			}
 		}

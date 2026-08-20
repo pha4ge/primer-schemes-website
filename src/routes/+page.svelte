@@ -60,7 +60,6 @@
 	const filterFunction = (
 		scheme,
 		statusObj,
-		tagObj,
 		contributorFacetObj,
 		organismFacetObj,
 		ampliconSizeFacetObj,
@@ -68,12 +67,6 @@
 	) => {
 		// Filter by status
 		if (!statusObj[scheme.status]) return false;
-
-		// Filter by tag
-		if (
-			Object.entries(tagObj).some(([tag, value]) => value && !scheme.tags.includes(tag))
-		)
-			return false;
 
 		// Filter by contributor (OR within facet)
 		if (Object.values(contributorFacetObj).some(Boolean)) {
@@ -146,23 +139,6 @@
 
 		fuse = new Fuse(flatSchemes, fuseOptions);
 
-		// Get the tag names
-		{
-			let _a = [
-				...new Set(
-					flatSchemes?.reduce((acc, scheme) => {
-						acc.push(...(scheme?.tags ?? []));
-						return acc;
-					}, [])
-				)
-			].sort();
-			_a.forEach((tag) => {
-				if (tags[tag] === undefined) {
-					tags[tag] = false;
-				}
-			});
-		}
-
 		// Build additional facet options
 		{
 			let contributorOptions = [
@@ -203,9 +179,6 @@
 				showStatus[key] = value === 'true';
 			}
 		}
-		for (const t of $page.url.searchParams.getAll('tag')) {
-			if (tags.hasOwnProperty(t)) tags[t] = true;
-		}
 		for (const c of $page.url.searchParams.getAll('contributor')) {
 			if (contributors.hasOwnProperty(c)) contributors[c] = true;
 		}
@@ -229,8 +202,6 @@
 				score: 1
 		  }));
 
-	// Get the tag names
-	let tags = {};
 	let contributors = {};
 	let organisms = {};
 	let ampliconSizes = {};
@@ -244,38 +215,30 @@
 
 	// Filter the search results
 	$: filteredFlatSearchResult = flatSearchResult?.filter((item) => {
-		return filterFunction(item.item, showStatus, tags, contributors, organisms, ampliconSizes, licenses);
+		return filterFunction(item.item, showStatus, contributors, organisms, ampliconSizes, licenses);
 	});
 
 	// Sidebar facets should reflect the current search + all active filters except themselves.
 	// Keep selected values visible so users can always deselect them.
 	const allStatusesVisible = Object.fromEntries(Object.keys(defaultShowStatus).map((k) => [k, true]));
 	$: statusFacetAvailabilityBase = flatSearchResult?.filter((item) =>
-		filterFunction(item.item, allStatusesVisible, tags, contributors, organisms, ampliconSizes, licenses)
-	);
-	$: tagFacetAvailabilityBase = flatSearchResult?.filter((item) =>
-		filterFunction(item.item, showStatus, {}, contributors, organisms, ampliconSizes, licenses)
+		filterFunction(item.item, allStatusesVisible, contributors, organisms, ampliconSizes, licenses)
 	);
 	$: contributorFacetAvailabilityBase = flatSearchResult?.filter((item) =>
-		filterFunction(item.item, showStatus, tags, {}, organisms, ampliconSizes, licenses)
+		filterFunction(item.item, showStatus, {}, organisms, ampliconSizes, licenses)
 	);
 	$: organismFacetAvailabilityBase = flatSearchResult?.filter((item) =>
-		filterFunction(item.item, showStatus, tags, contributors, {}, ampliconSizes, licenses)
+		filterFunction(item.item, showStatus, contributors, {}, ampliconSizes, licenses)
 	);
 	$: ampliconFacetAvailabilityBase = flatSearchResult?.filter((item) =>
-		filterFunction(item.item, showStatus, tags, contributors, organisms, {}, licenses)
+		filterFunction(item.item, showStatus, contributors, organisms, {}, licenses)
 	);
 	$: licenseFacetAvailabilityBase = flatSearchResult?.filter((item) =>
-		filterFunction(item.item, showStatus, tags, contributors, organisms, ampliconSizes, {})
+		filterFunction(item.item, showStatus, contributors, organisms, ampliconSizes, {})
 	);
 
 	$: statusCounts = buildCountMap(statusFacetAvailabilityBase, (scheme) => [scheme.status]);
 	$: visibleStatusRows = facetRowsForCurrentContext(showStatus, statusCounts);
-
-	$: tagCounts = buildCountMap(tagFacetAvailabilityBase, (scheme) =>
-		toStringArray(scheme.tags)
-	);
-	$: visibleTagRows = facetRowsForCurrentContext(tags, tagCounts);
 
 	$: ampliconCounts = buildCountMap(ampliconFacetAvailabilityBase, (scheme) => [
 		String(scheme.amplicon_size)
@@ -361,14 +324,12 @@ let updateURLFacet = async (paramName, facetObj) => {
 
 	let clearSidebarFilters = async () => {
 		showStatus = { ...defaultShowStatus };
-		Object.keys(tags).forEach((key) => (tags[key] = false));
 		Object.keys(contributors).forEach((key) => (contributors[key] = false));
 		Object.keys(organisms).forEach((key) => (organisms[key] = false));
 		Object.keys(ampliconSizes).forEach((key) => (ampliconSizes[key] = false));
 		Object.keys(licenses).forEach((key) => (licenses[key] = false));
 		let uriSearchParams = new URLSearchParams($page.url.searchParams.toString());
 		Object.keys(defaultShowStatus).forEach((key) => uriSearchParams.delete(key));
-		uriSearchParams.delete('tag');
 		uriSearchParams.delete('contributor');
 		uriSearchParams.delete('organism');
 		uriSearchParams.delete('ampliconsize');
@@ -424,25 +385,6 @@ let updateURLFacet = async (paramName, facetObj) => {
 								type="checkbox"
 								bind:checked={showStatus[row.key]}
 								on:change={updateURLStatus}
-							/>
-							<span>{row.key} ({row.count})</span>
-						</label>
-					{/each}
-				</div>
-			</div>
-
-			<div class="facet">
-				<legend><h6>Tags</h6></legend>
-				<div class="facet-scroll">
-					{#each visibleTagRows as row}
-						<label class="checkbox-row">
-							<input
-								type="checkbox"
-								bind:checked={tags[row.key]}
-								on:change={() => {
-									tags = { ...tags };
-									updateURLFacet('tag', tags);
-								}}
 							/>
 							<span>{row.key} ({row.count})</span>
 						</label>

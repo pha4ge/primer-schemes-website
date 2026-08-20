@@ -1,5 +1,5 @@
 <script>
-	import { GITHUB_REPO_URL } from '$lib/config.js';
+	import { GITHUB_REPO_URL, CATALOG_REPO_OWNER, CATALOG_REPO_NAME } from '$lib/config.js';
 </script>
 
 <main>
@@ -18,7 +18,7 @@
 			<h6>Submit a pull request</h6>
 			<p>
 				Submit a pull request to
-				<a href={GITHUB_REPO_URL}>ChrisgKent/pha4ge-primer-schemes</a>
+				<a href={GITHUB_REPO_URL}>{CATALOG_REPO_OWNER}/{CATALOG_REPO_NAME}</a>
 			</p>
 			<h6>Contact us</h6>
 			<p>

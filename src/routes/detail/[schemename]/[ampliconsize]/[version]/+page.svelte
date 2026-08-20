@@ -4,6 +4,7 @@
 	import { getCachedFlatSchemes } from '$lib/catalogCache.js';
 	import StatusPill from '$lib/StatusPill.svelte';
 	import { GITHUB_REPO_SCHEMES_BASE } from '$lib/config.js';
+	import { base } from '$app/paths';
 
 	import AmpliconPlot from './DefaultAmpliconPlot.svelte';
 
@@ -48,15 +49,44 @@
 	const infoSectionDefinitions = [
 		{
 			title: 'Core Metadata',
-			keys: ['name', 'amplicon_size', 'version', 'status', 'schema_version']
+			keys: [
+				'schema_version',
+				'primer_scheme_name',
+				'amplicon_size',
+				'primer_scheme_version',
+				'primer_scheme_identifier',
+				'primer_scheme_development_status'
+			]
 		},
 		{
 			title: 'Attribution',
-			keys: ['contributors', 'target_organisms', 'aliases', 'license', 'citations']
+			keys: [
+				'primer_scheme_contributor',
+				'primer_scheme_target_organism',
+				'primer_scheme_identifier_alias',
+				'primer_scheme_license',
+				'citation'
+			]
+		},
+		{
+			title: 'Classification',
+			keys: [
+				'primer_scheme_application',
+				'primer_scheme_scope',
+				'primer_scheme_derived_from',
+				'primer_scheme_vendor',
+				'primer_scheme_generator',
+				'primer_scheme_details'
+			]
 		},
 		{
 			title: 'Files And Checksums',
-			keys: ['primer_file_url', 'reference_file_url', 'info_file_url', 'checksums']
+			keys: [
+				'primer_file_url',
+				'reference_file_url',
+				'info_file_url',
+				'primer_scheme_checksums'
+			]
 		},
 		{
 			title: 'External Links',
@@ -66,16 +96,23 @@
 	const infoSectionKeys = new Set(infoSectionDefinitions.flatMap((section) => section.keys));
 
 	const isProbablyUrl = (value) => typeof value === 'string' && /^https?:\/\//.test(value);
+	const isPlainObject = (value) =>
+		value !== null && typeof value === 'object' && !Array.isArray(value);
+	// Contributors, vendors and generators all expose a *_name string.
+	const namedObjectLabel = (value) =>
+		value.primer_scheme_contributor_name ??
+		value.primer_scheme_vendor_name ??
+		value.primer_scheme_generator_name ??
+		value.name;
 	const isNamedObject = (value) =>
-		value !== null &&
-		typeof value === 'object' &&
-		!Array.isArray(value) &&
-		typeof value.name === 'string';
+		isPlainObject(value) && typeof namedObjectLabel(value) === 'string';
+	const organismLabel = (value) =>
+		value.primer_scheme_target_organism_name ??
+		value.primer_scheme_target_organism_ncbi_taxon_id ??
+		value.common_name ??
+		value.ncbi_tax_id;
 	const isOrganismObject = (value) =>
-		value !== null &&
-		typeof value === 'object' &&
-		!Array.isArray(value) &&
-		(value.common_name !== undefined || value.ncbi_tax_id !== undefined);
+		isPlainObject(value) && organismLabel(value) !== undefined;
 	const isLinksMap = (value) =>
 		value !== null &&
 		typeof value === 'object' &&
@@ -107,6 +144,24 @@
 		}
 		return JSON.stringify(value);
 	};
+
+	// derived_from is a scheme identifier ("<name>/<amplicon_size>/<version>").
+	// Link it only when that scheme is actually in the index.
+	$: derivedFrom = scheme?.derived_from
+		? (() => {
+				const [name, size, version] = String(scheme.derived_from).split('/');
+				const exists = flatSchemes?.some(
+					(s) =>
+						s.name === name &&
+						s.amplicon_size === Number.parseInt(size) &&
+						s.version === version
+				);
+				return {
+					label: scheme.derived_from,
+					href: exists ? `${base}/detail/${name}/${size}/${version}` : undefined
+				};
+		  })()
+		: undefined;
 
 	$: infoSections = info
 		? infoSectionDefinitions
@@ -299,6 +354,17 @@
 		>
 	</div>
 
+	{#if derivedFrom}
+		<p class="derived-from">
+			Derived from
+			{#if derivedFrom.href}
+				<a href={derivedFrom.href}>{derivedFrom.label}</a>
+			{:else}
+				<span>{derivedFrom.label}</span>
+			{/if}
+		</p>
+	{/if}
+
 	{#if infoLoading}
 		<p aria-busy="true">Loading data...</p>
 	{:else}
@@ -385,9 +451,9 @@
 																	rel="noopener noreferrer">{valueItem}</a
 																>
 															{:else if isNamedObject(valueItem)}
-																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{valueItem.name}</span>
+																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{namedObjectLabel(valueItem)}</span>
 															{:else if isOrganismObject(valueItem)}
-																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{valueItem.common_name ?? valueItem.ncbi_tax_id}</span>
+																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{organismLabel(valueItem)}</span>
 															{:else}
 																<span class="value-chip">{displayValue(valueItem)}</span>
 															{/if}
@@ -467,9 +533,9 @@
 																	rel="noopener noreferrer">{valueItem}</a
 																>
 															{:else if isNamedObject(valueItem)}
-																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{valueItem.name}</span>
+																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{namedObjectLabel(valueItem)}</span>
 															{:else if isOrganismObject(valueItem)}
-																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{valueItem.common_name ?? valueItem.ncbi_tax_id}</span>
+																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{organismLabel(valueItem)}</span>
 															{:else}
 																<span class="value-chip">{displayValue(valueItem)}</span>
 															{/if}
@@ -817,5 +883,11 @@
 		.json-table td {
 			padding-top: 0.2rem;
 		}
+	}
+
+	.derived-from {
+		margin-top: -0.5rem;
+		font-size: 0.875rem;
+		opacity: 0.8;
 	}
 </style>

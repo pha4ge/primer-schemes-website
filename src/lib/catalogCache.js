@@ -1,7 +1,7 @@
 import { flattenedSchemeIndex } from './flattenedSchemes.js';
 import { CATALOG_INDEX_URL } from './config.js';
 
-const CACHE_NAMESPACE = 'catalog-cache:v2';
+const CACHE_NAMESPACE = 'catalog-cache:v3';
 const CACHE_KEYS = {
 	flatSchemes: `${CACHE_NAMESPACE}:flat-schemes`
 };
