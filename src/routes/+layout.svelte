@@ -1,8 +1,23 @@
 <script>
+	import { onMount } from 'svelte';
 	import pha4geIcon from '$lib/assets/img/PHA4GE-Logo-icon-rgb-rj1du7r7r2d00lit9p7q8z9k9nlkg4s8suqtudjlrs.png';
 	import pha4geLandscape from '$lib/assets/img/PHA4GE-Logo-landscape-rgb-scaled.webp';
 	import gitHubLogo from '$lib/assets/img/github-mark.svg';
 	import { base } from '$app/paths';
+	import { GITHUB_REPO_URL, CATALOG_INDEX_URL } from '$lib/config.js';
+	import { getCachedFlatSchemes } from '$lib/catalogCache.js';
+
+	let catalogMeta = undefined;
+
+	onMount(async () => {
+		try {
+			const result = await getCachedFlatSchemes();
+			catalogMeta = result.meta;
+		} catch {
+			// footer info is best-effort
+		}
+	});
+
 </script>
 
 <header class="is-fixed-above-lg is-fixed">
@@ -16,7 +31,7 @@
 				<li><a href="{base}/">Search</a></li>
 				<li><a href="{base}/faqs">FAQs</a></li>
 				<li><a href="{base}/about">About</a></li>
-				<li><a href="https://github.com/pha4ge/primer-schemes">GitHub</a></li>
+				<li><a href="{GITHUB_REPO_URL}">GitHub</a></li>
 			</ul>
 		</nav>
 	</div>
@@ -27,7 +42,7 @@
 <footer>
 	<p>
 		pha4ge primer schemes
-		<a href="https://github.com/pha4ge/primer-schemes"
+		<a href="{GITHUB_REPO_URL}"
 			><img class="gitlogo" src={gitHubLogo} alt="Github logo" /></a
 		>
 	</p>
@@ -55,6 +70,13 @@
 	<p>
 		<img class="footer-logo" src={pha4geLandscape} alt="pha4ge logo" />
 	</p>
+	{#if catalogMeta}
+		<p class="index-info">
+			Index: <a href={CATALOG_INDEX_URL} target="_blank" rel="noopener noreferrer"
+				>{CATALOG_INDEX_URL}</a
+			>
+		</p>
+	{/if}
 </footer>
 
 <style>
@@ -149,6 +171,17 @@
 
 	.footer-logo {
 		height: 40px;
+	}
+
+	.index-info {
+		margin-top: 0.4rem;
+		font-size: 0.72rem;
+		color: #9ba3ab;
+		word-break: break-all;
+	}
+
+	.index-info a {
+		color: #9ba3ab;
 	}
 
 	@media (max-width: 920px) {

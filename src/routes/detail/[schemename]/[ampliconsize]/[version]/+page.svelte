@@ -3,6 +3,8 @@
 	import { page } from '$app/stores';
 	import { getCachedFlatSchemes } from '$lib/catalogCache.js';
 	import StatusPill from '$lib/StatusPill.svelte';
+	import { GITHUB_REPO_SCHEMES_BASE } from '$lib/config.js';
+	import { base } from '$app/paths';
 
 	import AmpliconPlot from './DefaultAmpliconPlot.svelte';
 
@@ -25,6 +27,10 @@
 	let referenceErrored = false;
 	let showReference = false;
 
+	// Name copy
+	let nameCopied = false;
+	let nameCopyResetTimer = undefined;
+
 	// Info.json
 	let info = undefined;
 	let infoLoading = true;
@@ -43,15 +49,44 @@
 	const infoSectionDefinitions = [
 		{
 			title: 'Core Metadata',
-			keys: ['name', 'amplicon_size', 'version', 'status', 'schema_version']
+			keys: [
+				'schema_version',
+				'primer_scheme_name',
+				'amplicon_size',
+				'primer_scheme_version',
+				'primer_scheme_identifier',
+				'primer_scheme_development_status'
+			]
 		},
 		{
 			title: 'Attribution',
-			keys: ['contributors', 'target_organisms', 'aliases', 'license', 'citations']
+			keys: [
+				'primer_scheme_contributor',
+				'primer_scheme_target_organism',
+				'primer_scheme_identifier_alias',
+				'primer_scheme_license',
+				'citation'
+			]
+		},
+		{
+			title: 'Classification',
+			keys: [
+				'primer_scheme_application',
+				'primer_scheme_scope',
+				'primer_scheme_derived_from',
+				'primer_scheme_vendor',
+				'primer_scheme_generator',
+				'primer_scheme_details'
+			]
 		},
 		{
 			title: 'Files And Checksums',
-			keys: ['primer_file_url', 'reference_file_url', 'info_file_url', 'checksums']
+			keys: [
+				'primer_file_url',
+				'reference_file_url',
+				'info_file_url',
+				'primer_scheme_checksums'
+			]
 		},
 		{
 			title: 'External Links',
@@ -61,16 +96,23 @@
 	const infoSectionKeys = new Set(infoSectionDefinitions.flatMap((section) => section.keys));
 
 	const isProbablyUrl = (value) => typeof value === 'string' && /^https?:\/\//.test(value);
+	const isPlainObject = (value) =>
+		value !== null && typeof value === 'object' && !Array.isArray(value);
+	// Contributors, vendors and generators all expose a *_name string.
+	const namedObjectLabel = (value) =>
+		value.primer_scheme_contributor_name ??
+		value.primer_scheme_vendor_name ??
+		value.primer_scheme_generator_name ??
+		value.name;
 	const isNamedObject = (value) =>
-		value !== null &&
-		typeof value === 'object' &&
-		!Array.isArray(value) &&
-		typeof value.name === 'string';
+		isPlainObject(value) && typeof namedObjectLabel(value) === 'string';
+	const organismLabel = (value) =>
+		value.primer_scheme_target_organism_name ??
+		value.primer_scheme_target_organism_ncbi_taxon_id ??
+		value.common_name ??
+		value.ncbi_tax_id;
 	const isOrganismObject = (value) =>
-		value !== null &&
-		typeof value === 'object' &&
-		!Array.isArray(value) &&
-		(value.common_name !== undefined || value.ncbi_tax_id !== undefined);
+		isPlainObject(value) && organismLabel(value) !== undefined;
 	const isLinksMap = (value) =>
 		value !== null &&
 		typeof value === 'object' &&
@@ -103,6 +145,24 @@
 		return JSON.stringify(value);
 	};
 
+	// derived_from is a scheme identifier ("<name>/<amplicon_size>/<version>").
+	// Link it only when that scheme is actually in the index.
+	$: derivedFrom = scheme?.derived_from
+		? (() => {
+				const [name, size, version] = String(scheme.derived_from).split('/');
+				const exists = flatSchemes?.some(
+					(s) =>
+						s.name === name &&
+						s.amplicon_size === Number.parseInt(size) &&
+						s.version === version
+				);
+				return {
+					label: scheme.derived_from,
+					href: exists ? `${base}/detail/${name}/${size}/${version}` : undefined
+				};
+		  })()
+		: undefined;
+
 	$: infoSections = info
 		? infoSectionDefinitions
 				.map((section) => ({
@@ -120,6 +180,20 @@
 				.sort()
 				.map((key) => ({ key, value: info[key] }))
 		: [];
+
+	async function copyName() {
+		if (!scheme?.name) return;
+		try {
+			await navigator.clipboard.writeText(`${scheme.name}/${scheme.amplicon_size}/${scheme.version}`.replace(/\s/g, ''));
+			nameCopied = true;
+			clearTimeout(nameCopyResetTimer);
+			nameCopyResetTimer = setTimeout(() => {
+				nameCopied = false;
+			}, 1400);
+		} catch (err) {
+			console.error(err);
+		}
+	}
 
 	async function copyInfoJson() {
 		if (!info) return;
@@ -263,13 +337,33 @@
 		<p class="cache-warning">Using cached catalog data; upstream refresh failed. Data may be up to 2+ minutes old.</p>
 	{/if}
 	<div class="grid level">
-		<h2>{scheme.name} / {scheme.amplicon_size} / {scheme.version}</h2>
+		<h2>
+			{scheme.name} / {scheme.amplicon_size} / {scheme.version}
+			<button type="button" class="copy-name" on:click={copyName} title="Copy scheme name">
+				{#if nameCopied}
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+				{:else}
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+				{/if}
+			</button>
+		</h2>
 		<StatusPill status={scheme.status} />
 		<a
-			href="https://github.com/pha4ge/primer-schemes/tree/main/schemes/{scheme.name}/{scheme.amplicon_size}/{scheme.version}"
+			href="{GITHUB_REPO_SCHEMES_BASE}/{scheme.name}/{scheme.amplicon_size}/{scheme.version}"
 			class="contrast">[github-page]</a
 		>
 	</div>
+
+	{#if derivedFrom}
+		<p class="derived-from">
+			Derived from
+			{#if derivedFrom.href}
+				<a href={derivedFrom.href}>{derivedFrom.label}</a>
+			{:else}
+				<span>{derivedFrom.label}</span>
+			{/if}
+		</p>
+	{/if}
 
 	{#if infoLoading}
 		<p aria-busy="true">Loading data...</p>
@@ -357,9 +451,9 @@
 																	rel="noopener noreferrer">{valueItem}</a
 																>
 															{:else if isNamedObject(valueItem)}
-																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{valueItem.name}</span>
+																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{namedObjectLabel(valueItem)}</span>
 															{:else if isOrganismObject(valueItem)}
-																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{valueItem.common_name ?? valueItem.ncbi_tax_id}</span>
+																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{organismLabel(valueItem)}</span>
 															{:else}
 																<span class="value-chip">{displayValue(valueItem)}</span>
 															{/if}
@@ -439,9 +533,9 @@
 																	rel="noopener noreferrer">{valueItem}</a
 																>
 															{:else if isNamedObject(valueItem)}
-																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{valueItem.name}</span>
+																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{namedObjectLabel(valueItem)}</span>
 															{:else if isOrganismObject(valueItem)}
-																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{valueItem.common_name ?? valueItem.ncbi_tax_id}</span>
+																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{organismLabel(valueItem)}</span>
 															{:else}
 																<span class="value-chip">{displayValue(valueItem)}</span>
 															{/if}
@@ -612,6 +706,25 @@
 {/if}
 
 <style>
+	.copy-name {
+		display: inline-flex;
+		align-items: center;
+		margin: 0 0 0 0.4rem;
+		padding: 0.2rem 0.3rem;
+		background: none;
+		border: none;
+		color: var(--pico-muted-color);
+		cursor: pointer;
+		vertical-align: middle;
+		border-radius: 4px;
+		line-height: 1;
+	}
+
+	.copy-name:hover {
+		color: var(--pico-primary);
+		background: rgba(35, 74, 114, 0.08);
+	}
+
 	.level {
 		grid-template-columns: 1fr auto;
 		align-items: center;
@@ -770,5 +883,11 @@
 		.json-table td {
 			padding-top: 0.2rem;
 		}
+	}
+
+	.derived-from {
+		margin-top: -0.5rem;
+		font-size: 0.875rem;
+		opacity: 0.8;
 	}
 </style>

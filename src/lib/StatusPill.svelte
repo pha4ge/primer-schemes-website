@@ -3,7 +3,7 @@
 	export let label = undefined;
 </script>
 
-<span class="pill {status}">
+<span class="pill {status?.toLowerCase()}">
 	<span class="pill-text">{label ?? status}</span>
 </span>
 

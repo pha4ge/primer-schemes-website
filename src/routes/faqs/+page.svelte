@@ -1,3 +1,7 @@
+<script>
+	import { GITHUB_REPO_URL, CATALOG_REPO_OWNER, CATALOG_REPO_NAME } from '$lib/config.js';
+</script>
+
 <main>
 	<section>
 		<hgroup>
@@ -12,10 +16,8 @@
 			</header>
 			<h6>Open a pull request</h6>
 			<p>
-				Open a pull request at
-				<a href="https://github.com/pha4ge/primer-schemes/pulls"
-					>pha4ge/primer-schemes</a
-				>
+				Submit a pull request to
+				<a href={GITHUB_REPO_URL}>{CATALOG_REPO_OWNER}/{CATALOG_REPO_NAME}</a>
 			</p>
 			<h6>Contact us</h6>
 			<p>
