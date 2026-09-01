@@ -6,16 +6,15 @@
 	<section>
 		<hgroup>
 			<h1>FAQs</h1>
-			<p>Answers to common questions</p>
 		</hgroup>
 
 		<article>
 			<header>
 				<nav>
-					<li><strong>How do I request for my scheme to be tracked?</strong></li>
+					<li><strong>How can I add my scheme?</strong></li>
 				</nav>
 			</header>
-			<h6>Submit a pull request</h6>
+			<h6>Open a pull request</h6>
 			<p>
 				Submit a pull request to
 				<a href={GITHUB_REPO_URL}>{CATALOG_REPO_OWNER}/{CATALOG_REPO_NAME}</a>
@@ -23,7 +22,8 @@
 			<h6>Contact us</h6>
 			<p>
 				Email us at
-				<a href="mailto:c.g.kent@bham.ac.uk">c.g.kent@bham.ac.uk</a>
+				<a href="mailto:b.constantinides@bham.ac.uk">b.constantinides@bham.ac.uk</a> and
+					<a href="mailto:c.g.kent@bham.ac.uk">c.g.kent@bham.ac.uk</a>
 			</p>
 		</article>
 
