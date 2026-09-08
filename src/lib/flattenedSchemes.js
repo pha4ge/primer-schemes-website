@@ -40,6 +40,52 @@ const adaptScheme = (scheme, base) => ({
 	aliases: []
 });
 
+/**
+ * Version strings in the index are vMAJOR.MINOR.PATCH. Parse the numeric parts so
+ * v5.10.0 sorts above v5.4.2 (a plain string compare gets that backwards).
+ */
+const parseVersionParts = (version) =>
+	String(version ?? '')
+		.replace(/^v/i, '')
+		.split('.')
+		.map((part) => Number.parseInt(part, 10));
+
+/** Newest version first. Falls back to a numeric-aware string compare for pre-releases. */
+const compareVersionsDesc = (a, b) => {
+	const partsA = parseVersionParts(a);
+	const partsB = parseVersionParts(b);
+
+	if (partsA.some(Number.isNaN) || partsB.some(Number.isNaN)) {
+		return String(b ?? '').localeCompare(String(a ?? ''), undefined, { numeric: true });
+	}
+
+	const length = Math.max(partsA.length, partsB.length);
+	for (let i = 0; i < length; i += 1) {
+		const diff = (partsB[i] ?? 0) - (partsA[i] ?? 0);
+		if (diff !== 0) return diff;
+	}
+	return 0;
+};
+
+const toSortableSize = (size) => {
+	const parsed = Number(size);
+	return Number.isFinite(parsed) ? parsed : 0;
+};
+
+/** Name A->Z, then amplicon size ascending, then version newest first. */
+export const compareSchemes = (a, b) => {
+	const byName = String(a.name ?? '').localeCompare(String(b.name ?? ''), undefined, {
+		numeric: true,
+		sensitivity: 'base'
+	});
+	if (byName !== 0) return byName;
+
+	const bySize = toSortableSize(a.amplicon_size) - toSortableSize(b.amplicon_size);
+	if (bySize !== 0) return bySize;
+
+	return compareVersionsDesc(a.version, b.version);
+};
+
 export const flattenedSchemeIndex = (schemeIndex, base = SCHEMES_RAW_BASE) => {
 	const flatSchemes = [];
 
@@ -52,5 +98,5 @@ export const flattenedSchemeIndex = (schemeIndex, base = SCHEMES_RAW_BASE) => {
 			}
 		}
 	}
-	return flatSchemes;
+	return flatSchemes.sort(compareSchemes);
 };

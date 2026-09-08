@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { flattenedSchemeIndex, resolveSchemeUrl } from './flattenedSchemes.js';
+import { compareSchemes, flattenedSchemeIndex, resolveSchemeUrl } from './flattenedSchemes.js';
 import { SCHEMES_RAW_BASE } from './config.js';
 
 const leaf = (overrides = {}) => ({
@@ -72,7 +72,7 @@ describe('flattenedSchemeIndex', () => {
 
 		expect(flattened).toHaveLength(3);
 		expect(flattened.map((scheme) => scheme.name)).toEqual(['virus-a', 'virus-a', 'virus-b']);
-		expect(flattened.map((scheme) => scheme.version)).toEqual(['v1.0.0', 'v2.0.0', 'v1.0.0']);
+		expect(flattened.map((scheme) => scheme.version)).toEqual(['v2.0.0', 'v1.0.0', 'v1.0.0']);
 		expect(flattened.map((scheme) => scheme.amplicon_size)).toEqual([400, 400, 500]);
 	});
 
@@ -160,8 +160,116 @@ describe('flattenedSchemeIndex', () => {
 		expect(second).toEqual(first);
 	});
 
+	it('sorts scheme names alphabetically regardless of index key order', () => {
+		const flattened = flattenedSchemeIndex(
+			indexOf(
+				leaf({ primer_scheme_name: 'virus-c' }),
+				leaf({ primer_scheme_name: 'virus-a' }),
+				leaf({ primer_scheme_name: 'virus-b' })
+			)
+		);
+
+		expect(flattened.map((scheme) => scheme.name)).toEqual(['virus-a', 'virus-b', 'virus-c']);
+	});
+
+	it('sorts amplicon sizes numerically, not lexically', () => {
+		const flattened = flattenedSchemeIndex(
+			indexOf(
+				leaf({ amplicon_size: 2000 }),
+				leaf({ amplicon_size: 400 }),
+				leaf({ amplicon_size: 1200 })
+			)
+		);
+
+		expect(flattened.map((scheme) => scheme.amplicon_size)).toEqual([400, 1200, 2000]);
+	});
+
+	it('sorts versions within one scheme and size newest first', () => {
+		const flattened = flattenedSchemeIndex(
+			indexOf(
+				leaf({ primer_scheme_version: 'v5.3.2' }),
+				leaf({ primer_scheme_version: 'v1.0.0' }),
+				leaf({ primer_scheme_version: 'v5.10.0' }),
+				leaf({ primer_scheme_version: 'v5.4.2' })
+			)
+		);
+
+		expect(flattened.map((scheme) => scheme.version)).toEqual([
+			'v5.10.0',
+			'v5.4.2',
+			'v5.3.2',
+			'v1.0.0'
+		]);
+	});
+
+	it('tolerates non-numeric pre-release versions without throwing', () => {
+		const flattened = flattenedSchemeIndex(
+			indexOf(
+				leaf({ primer_scheme_version: 'v1.0.0-alpha' }),
+				leaf({ primer_scheme_version: 'v1.0.0' })
+			)
+		);
+
+		expect(flattened).toHaveLength(2);
+		expect(flattened.map((scheme) => scheme.version)).toEqual(['v1.0.0-alpha', 'v1.0.0']);
+	});
+
+	it('orders by name, then size, then version together', () => {
+		const flattened = flattenedSchemeIndex(
+			indexOf(
+				leaf({ primer_scheme_name: 'virus-b', amplicon_size: 2000 }),
+				leaf({ primer_scheme_name: 'virus-a', amplicon_size: 1200 }),
+				leaf({
+					primer_scheme_name: 'virus-a',
+					amplicon_size: 400,
+					primer_scheme_version: 'v5.3.2'
+				}),
+				leaf({ primer_scheme_name: 'virus-a', amplicon_size: 400, primer_scheme_version: 'v5.4.2' })
+			)
+		);
+
+		expect(
+			flattened.map((scheme) => `${scheme.name}/${scheme.amplicon_size}/${scheme.version}`)
+		).toEqual([
+			'virus-a/400/v5.4.2',
+			'virus-a/400/v5.3.2',
+			'virus-a/1200/v1.0.0',
+			'virus-b/2000/v1.0.0'
+		]);
+	});
+
 	it('returns an empty array when no schemes are present', () => {
 		expect(flattenedSchemeIndex({ primerschemes: {} })).toEqual([]);
 		expect(flattenedSchemeIndex({})).toEqual([]);
+	});
+});
+
+describe('compareSchemes', () => {
+	const rec = (name, amplicon_size, version) => ({ name, amplicon_size, version });
+
+	it('puts an earlier name first', () => {
+		expect(
+			compareSchemes(rec('virus-a', 400, 'v1.0.0'), rec('virus-b', 400, 'v1.0.0'))
+		).toBeLessThan(0);
+	});
+
+	it('puts a smaller amplicon size first within one name', () => {
+		expect(
+			compareSchemes(rec('virus-a', 400, 'v1.0.0'), rec('virus-a', 1200, 'v1.0.0'))
+		).toBeLessThan(0);
+	});
+
+	it('puts a newer version first within one name and size', () => {
+		expect(
+			compareSchemes(rec('virus-a', 400, 'v5.10.0'), rec('virus-a', 400, 'v5.4.2'))
+		).toBeLessThan(0);
+	});
+
+	it('treats a missing version component as zero', () => {
+		expect(compareSchemes(rec('virus-a', 400, 'v1.0'), rec('virus-a', 400, 'v1.0.0'))).toBe(0);
+	});
+
+	it('is symmetric for equal records', () => {
+		expect(compareSchemes(rec('virus-a', 400, 'v1.0.0'), rec('virus-a', 400, 'v1.0.0'))).toBe(0);
 	});
 });

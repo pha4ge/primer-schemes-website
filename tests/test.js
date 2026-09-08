@@ -4,7 +4,7 @@ import { CATALOG_INDEX_URL } from '../src/lib/config.js';
 const INDEX_URL = CATALOG_INDEX_URL;
 
 const CACHE_KEYS = {
-	flatSchemes: 'catalog-cache:v3:flat-schemes'
+	flatSchemes: 'catalog-cache:v4:flat-schemes'
 };
 
 const JSON_HEADERS = {
@@ -245,7 +245,7 @@ test('a cache entry from the previous schema version is not reused', async ({ pa
 	// Old-shape payload under the superseded namespace must be ignored, not rendered.
 	await page.addInitScript(() => {
 		window.localStorage.setItem(
-			'catalog-cache:v2:flat-schemes',
+			'catalog-cache:v3:flat-schemes',
 			JSON.stringify({
 				data: [{ name: 'ghost-scheme', amplicon_size: 999, version: 'v9.9.9' }],
 				fetchedAt: Date.now()
@@ -257,6 +257,56 @@ test('a cache entry from the previous schema version is not reused', async ({ pa
 
 	await expect(page.getByText('virus-a / 400 / v1.0.0')).toBeVisible();
 	await expect(page.getByText('ghost-scheme')).not.toBeVisible();
+});
+
+// Deliberately out of order on every axis: name, amplicon size and version.
+const UNSORTED_INDEX = indexOf(
+	leaf({
+		name: 'virus-b',
+		ampliconSize: 2000,
+		version: 'v1.0.0',
+		status: 'VALIDATED',
+		contributors: ['Bob'],
+		organisms: ['virus-b']
+	}),
+	leaf({
+		name: 'virus-a',
+		ampliconSize: 1200,
+		version: 'v1.0.0',
+		status: 'VALIDATED',
+		contributors: ['Alice'],
+		organisms: ['virus-a']
+	}),
+	leaf({
+		name: 'virus-a',
+		ampliconSize: 400,
+		version: 'v5.3.2',
+		status: 'VALIDATED',
+		contributors: ['Alice'],
+		organisms: ['virus-a']
+	}),
+	leaf({
+		name: 'virus-a',
+		ampliconSize: 400,
+		version: 'v5.10.0',
+		status: 'VALIDATED',
+		contributors: ['Alice'],
+		organisms: ['virus-a']
+	})
+);
+
+test('the default listing is sorted by name, then amplicon size, then newest version', async ({
+	page
+}) => {
+	await mockCatalogRoutes(page, { indexData: UNSORTED_INDEX });
+	await page.goto('/');
+
+	await expect(page.locator('table a.title')).toHaveText([
+		'virus-a / 400 / v5.10.0',
+		'virus-a / 400 / v5.3.2',
+		'virus-a / 1200 / v1.0.0',
+		'virus-b / 2000 / v1.0.0'
+	]);
 });
 
 test('the tags facet is gone from the sidebar', async ({ page }) => {
