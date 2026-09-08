@@ -15,4 +15,6 @@ export const SCHEMES_RAW_BASE = `${RAW_BASE}/schemes`;
 
 export const GITHUB_REPO_URL = `https://github.com/${CATALOG_REPO_OWNER}/${CATALOG_REPO_NAME}`;
 
+export const GITHUB_REPO_ISSUES_URL = `${GITHUB_REPO_URL}/issues`;
+
 export const GITHUB_REPO_SCHEMES_BASE = `${GITHUB_REPO_URL}/tree/${CATALOG_REPO_BRANCH}/schemes`;
