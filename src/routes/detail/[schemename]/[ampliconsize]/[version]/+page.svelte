@@ -96,6 +96,11 @@
 	const infoSectionKeys = new Set(infoSectionDefinitions.flatMap((section) => section.keys));
 
 	const isProbablyUrl = (value) => typeof value === 'string' && /^https?:\/\//.test(value);
+	// Free-text fields (primer_scheme_details) arrive as arrays of prose strings. A pill
+	// border around a paragraph reads as a bubble, so render long strings as prose instead.
+	const PROSE_LENGTH_THRESHOLD = 120;
+	const isProseString = (value) =>
+		typeof value === 'string' && value.length > PROSE_LENGTH_THRESHOLD;
 	const isPlainObject = (value) =>
 		value !== null && typeof value === 'object' && !Array.isArray(value);
 	// Contributors, vendors and generators all expose a *_name string.
@@ -454,6 +459,8 @@
 																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{namedObjectLabel(valueItem)}</span>
 															{:else if isOrganismObject(valueItem)}
 																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{organismLabel(valueItem)}</span>
+															{:else if isProseString(valueItem)}
+																<p class="value-prose">{valueItem}</p>
 															{:else}
 																<span class="value-chip">{displayValue(valueItem)}</span>
 															{/if}
@@ -536,6 +543,8 @@
 																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{namedObjectLabel(valueItem)}</span>
 															{:else if isOrganismObject(valueItem)}
 																<span class="value-chip" data-tooltip={Object.entries(valueItem).map(([k, v]) => `${k}: ${v}`).join('\n')}>{organismLabel(valueItem)}</span>
+															{:else if isProseString(valueItem)}
+																<p class="value-prose">{valueItem}</p>
 															{:else}
 																<span class="value-chip">{displayValue(valueItem)}</span>
 															{/if}
@@ -823,6 +832,15 @@
 		border: 1px solid rgba(115, 130, 140, 0.28);
 		background: rgba(255, 255, 255, 0.65);
 		font-size: 0.9rem;
+	}
+
+	.value-prose {
+		flex: 1 1 100%;
+		margin: 0;
+		font-size: 0.9rem;
+		line-height: 1.5;
+		white-space: normal;
+		overflow-wrap: anywhere;
 	}
 
 	.link-chip {
