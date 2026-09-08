@@ -359,10 +359,10 @@ let updateURLFacet = async (paramName, facetObj) => {
 		<details>
 			<summary>What is searchable?</summary>
 			<ul>
-				<li><strong>Scheme name</strong> — the identifier of the primer scheme (e.g. <code>artic-sars-cov-2</code>)</li>
-				<li><strong>Contributors</strong> — names of individuals or groups who designed the scheme</li>
-				<li><strong>Target organisms</strong> — the organism(s) the scheme is designed to sequence</li>
-				<li><strong>Aliases</strong> — alternative names the scheme may be known by</li>
+				<li><strong>Scheme name</strong>: the identifier of the primer scheme (e.g. <code>artic-sars-cov-2</code>)</li>
+				<li><strong>Contributors</strong>: names of individuals or groups who designed the scheme</li>
+				<li><strong>Target organisms</strong>: the organism(s) the scheme is designed to sequence</li>
+				<li><strong>Aliases</strong>: alternative names the scheme may be known by</li>
 			</ul>
 		</details>
 	</form>
